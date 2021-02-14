@@ -48,18 +48,24 @@ public class CaptchaLoader extends NativeImageLoader implements Serializable {
   private static final Logger logger = LoggerFactory.getLogger(CaptchaLoader.class);
 
   // PNG image data, 200 x 60, 8-bit/color RGBA, non-interlaced
-  private static int width = 200;
-  private static int height = 60;
+  // private static int width = 200;
+  // private static int width = 140;
+  private static int width = 18;
+  // private static int height = 60;
+  // private static int height = 29;
+  private static int height = 19;
   private static int channels = 1;
 
   private File fullDir = null;
   private Iterator<File> fileIterator;
   private int numExample = 0;
-
+/*
   private static List<String> labelList =
       Arrays.asList(
 	  "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H",
 	  "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+*/
+  private static List<String> labelList = Arrays.asList("0","1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "=", "?");
 
   public CaptchaLoader(String dataSetType) {
     this(height, width, channels, null, dataSetType);
@@ -88,7 +94,7 @@ public class CaptchaLoader extends NativeImageLoader implements Serializable {
 
   protected void load() {
     try {
-      List<File> dataFiles = (List<File>) FileUtils.listFiles(fullDir, new String[] {"png"}, true);
+      List<File> dataFiles = (List<File>) FileUtils.listFiles(fullDir, new String[] {"one.png"}, true);
       Collections.shuffle(dataFiles);
       fileIterator = dataFiles.iterator();
       numExample = dataFiles.size();
@@ -107,11 +113,13 @@ public class CaptchaLoader extends NativeImageLoader implements Serializable {
 
     while (batchNumCount != num && fileIterator.hasNext()) {
       File image = fileIterator.next();
-      String imageName = image.getName().substring(0, image.getName().lastIndexOf('.'));
+      // String imageName = image.getName().substring(0, image.getName().lastIndexOf('.'));
+      // String imageName = image.getName().substring(0, image.getName().indexOf('.'));
+      String imageName = image.getName().substring(0, Main.DIGITS);
       String[] imageNames = imageName.split("");
       INDArray feature = asMatrix(image);
       INDArray[] features = new INDArray[] {feature};
-      INDArray[] labels = new INDArray[5];
+      INDArray[] labels = new INDArray[Main.DIGITS];
 
       Nd4j.getAffinityManager().ensureLocation(feature, AffinityManager.Location.DEVICE);
       for (int i = 0; i < imageNames.length; i++) {

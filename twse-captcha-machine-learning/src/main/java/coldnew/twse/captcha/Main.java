@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.deeplearning4j.api.storage.StatsStorage;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.ComputationGraphConfiguration;
 import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -59,9 +60,11 @@ import org.slf4j.LoggerFactory;
 class Main {
 
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
+  public static final int DIGITS = 1;
 
   private static long seed = 123;
   private static int epochs = 50;
+  //private static int batchSize = 15;
   private static int batchSize = 15;
   private static String rootPath = System.getProperty("user.dir");
 
@@ -90,7 +93,7 @@ class Main {
     // construct the iterator
     MultiDataSetIterator trainMulIterator = new CaptchaSetIterator(batchSize, "train");
     MultiDataSetIterator testMulIterator = new CaptchaSetIterator(batchSize, "test");
-    MultiDataSetIterator validateMulIterator = new CaptchaSetIterator(batchSize, "validate");
+    MultiDataSetIterator validateMulIterator = new CaptchaSetIterator(batchSize, "validate2");
     // fit
     for (int i = 0; i < epochs; i++) {
       System.out.println("Epoch=====================" + i);
@@ -118,14 +121,18 @@ class Main {
             .weightInit(WeightInit.XAVIER_UNIFORM)
             .graphBuilder()
             .addInputs("trainFeatures")
-            .setInputTypes(InputType.convolutional(60, 200, 1))
-            .setOutputs("out1", "out2", "out3", "out4", "out5")
+            // .setInputTypes(InputType.convolutional(60, 200, 1))
+              //.setInputTypes(InputType.convolutional(29, 140, 1))
+                .setInputTypes(InputType.convolutional(19, 18, 1))
+            //.setOutputs("out1", "out2", "out3", "out4", "out5")
+                .setOutputs("out1")
             .addLayer(
                 "cnn1",
-                new ConvolutionLayer.Builder(new int[] {5, 5}, new int[] {1, 1}, new int[] {0, 0})
+                // new ConvolutionLayer.Builder(new int[] {5, 5}, new int[] {1, 1}, new int[] {0, 0})
+                new ConvolutionLayer.Builder(new int[] {5, 5}, new int[] {1, 1}, new int[] {1, 1})
                     .nIn(1)
-                    .nOut(48)
-                    .activation(Activation.RELU)
+                    //.nOut(48)
+                        .nOut(128)
                     .build(),
                 "trainFeatures")
             .addLayer(
@@ -134,23 +141,29 @@ class Main {
                         PoolingType.MAX, new int[] {2, 2}, new int[] {2, 2}, new int[] {0, 0})
                     .build(),
                 "cnn1")
-            .addLayer(
+/*            .addLayer(
                 "cnn2",
-                new ConvolutionLayer.Builder(new int[] {5, 5}, new int[] {1, 1}, new int[] {0, 0})
-                    .nOut(64)
+                // new ConvolutionLayer.Builder(new int[] {5, 5}, new int[] {1, 1}, new int[] {0, 0})
+                new ConvolutionLayer.Builder(new int[] {5, 5}, new int[] {1, 1}, new int[] {1, 1})
+                    //.nOut(64)
+                    .nOut(256)
                     .activation(Activation.RELU)
                     .build(),
                 "maxpool1")
             .addLayer(
                 "maxpool2",
                 new SubsamplingLayer.Builder(
-                        PoolingType.MAX, new int[] {2, 1}, new int[] {2, 1}, new int[] {0, 0})
+                        //PoolingType.MAX, new int[] {2, 1}, new int[] {2, 1}, new int[] {0, 0})
+                      PoolingType.MAX, new int[] {2, 2}, new int[] {2, 1}, new int[] {0, 0})
                     .build(),
                 "cnn2")
+
             .addLayer(
                 "cnn3",
-                new ConvolutionLayer.Builder(new int[] {3, 3}, new int[] {1, 1}, new int[] {0, 0})
-                    .nOut(128)
+                //new ConvolutionLayer.Builder(new int[] {3, 3}, new int[] {1, 1}, new int[] {0, 0})
+                new ConvolutionLayer.Builder(new int[] {3, 3}, new int[] {1, 1}, new int[] {1, 1})
+                    //.nOut(128)
+                        .nOut(512)
                     .activation(Activation.RELU)
                     .build(),
                 "maxpool2")
@@ -159,10 +172,12 @@ class Main {
                 new SubsamplingLayer.Builder(
                         PoolingType.MAX, new int[] {2, 2}, new int[] {2, 2}, new int[] {0, 0})
                     .build(),
-                "cnn3")
+                "cnn3")*/
+/*
             .addLayer(
                 "cnn4",
-                new ConvolutionLayer.Builder(new int[] {4, 4}, new int[] {1, 1}, new int[] {0, 0})
+                // new ConvolutionLayer.Builder(new int[] {3, 3}, new int[] {1, 1}, new int[] {0, 0})
+                    new ConvolutionLayer.Builder(new int[] {3, 3}, new int[] {1, 1}, new int[] {0, 0})
                     .nOut(256)
                     .activation(Activation.RELU)
                     .build(),
@@ -172,44 +187,53 @@ class Main {
                 new SubsamplingLayer.Builder(
                         PoolingType.MAX, new int[] {2, 2}, new int[] {2, 2}, new int[] {0, 0})
                     .build(),
-                "cnn4")
-            .addLayer("ffn0", new DenseLayer.Builder().nOut(3072).build(), "maxpool4")
-            .addLayer("ffn1", new DenseLayer.Builder().nOut(3072).build(), "ffn0")
+                "cnn4")*/
+            //.addLayer("ffn0", new DenseLayer.Builder().nOut(3072).build(), "maxpool4")
+//              .addLayer("ffn0", new DenseLayer.Builder().nOut(3072).build(), "maxpool3")
+//            .addLayer("ffn1", new DenseLayer.Builder().nOut(3072).build(), "ffn0")
+                // .addLayer("ffn0", new DenseLayer.Builder().nOut(3072).build(), "maxpool3")
+                // .addLayer("ffn0", new DenseLayer.Builder().nOut(2072).build(), "maxpool1")
+                .addLayer("ffn1", new DenseLayer.Builder().nOut(2072).build(), "maxpool1")
             .addLayer(
                 "out1",
                 new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                    .nOut(36)
+                    //.nOut(36)
+                        .nOut(14)
                     .activation(Activation.SOFTMAX)
                     .build(),
                 "ffn1")
-            .addLayer(
+/*            .addLayer(
                 "out2",
                 new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                    .nOut(36)
+                    //.nOut(36)
+                        .nOut(14)
                     .activation(Activation.SOFTMAX)
                     .build(),
                 "ffn1")
             .addLayer(
                 "out3",
                 new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                    .nOut(36)
+                    //.nOut(36)
+                        .nOut(14)
                     .activation(Activation.SOFTMAX)
                     .build(),
                 "ffn1")
             .addLayer(
                 "out4",
                 new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                    .nOut(36)
+                    // .nOut(36)
+                        .nOut(14)
                     .activation(Activation.SOFTMAX)
                     .build(),
                 "ffn1")
             .addLayer(
                 "out5",
                 new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                    .nOut(36)
+                    //.nOut(36)
+                        .nOut(14)
                     .activation(Activation.SOFTMAX)
                     .build(),
-                "ffn1")
+                "ffn1")*/
             .pretrain(false)
             .backprop(true)
             .build();
@@ -218,18 +242,22 @@ class Main {
     ComputationGraph model = new ComputationGraph(config);
     model.init();
 
+    model.setListeners(new ScoreIterationListener(100));
     return model;
   }
 
   public static void modelPredict(ComputationGraph model, MultiDataSetIterator iterator) {
     int sumCount = 0;
     int correctCount = 0;
-
+/*
     List<String> labelList =
         Arrays.asList(
             "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G",
             "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X",
             "Y", "Z");
+            */
+
+    List<String> labelList = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "+", "-", "=", "?");
 
     while (iterator.hasNext()) {
       MultiDataSet mds = iterator.next();
@@ -241,7 +269,7 @@ class Main {
         String peLabel = "";
         INDArray preOutput = null;
         INDArray realLabel = null;
-        for (int digit = 0; digit < 5; digit++) {
+        for (int digit = 0; digit < DIGITS; digit++) {
           preOutput = output[digit].getRow(dataIndex);
           peLabel += labelList.get(Nd4j.argMax(preOutput, 1).getInt(0));
 
